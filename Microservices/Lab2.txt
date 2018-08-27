@@ -1,0 +1,193 @@
+Step 1 : 
+Create citi-eureka-server with EurekaServer as Dependency 
+Add @EnableEurekaServer at Main Class
+application.properties
+	 server.port=8761
+	eureka.client.register-with-eureka=false
+	eureka.client.fetch-registry=false
+	
+
+Step 2 :Registring Service 
+       Import citi-fastpass-service and citi-tollrate-service==Run and Test the Service 
+       http://loclahost:8085/tollrate/2
+       In citi-tollrate-service open POM and add dependency :
+			spring-cloud-starter-eureka
+       Go in the controller(TollRateController) and "Sysout("StationRequested"+stationid) in GetTollRate method
+       In the main class Annotate @EnableEurekaClient 
+       Add bootstrap.properties with below values:
+			spring.application.name=citi-toll-service
+       In application.properties 
+	    #eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+	    eureka.client.register-with-eureka=true
+	    eureka.client.fetch-registry=ture
+	     eureka.instance.instance-id=${spring.application.name}:${random.int}
+	     eureka.instance.hostname=localhost
+	     server.port=0
+             remove : server.port=8085
+Step 3 ...Similary do things for citi-fastpass-service
+			In citi-fastpass-service open POM and add dependency :
+			spring-cloud-starter-eureka
+			In the main class Annotate @EnableEurekaClient 
+            Add bootstrap.properties with below values:
+			spring.application.name=citi-fastpass-service
+            In application.properties set server.port=0
+		                 eureka.client.register-with-eureka=true
+				 eureka.client.fetch-registry=ture
+ 				eureka.instance.isnatnce-id=${spring.application.name}:${random.int}
+				 eureka.instance.hostname=localhost
+
+Step 4 -Discovering and LoadBalancing ..Import remaining citi-eureka-tollrate-billboard and citi-eureka-fatspass-console
+	Go to citi-eureka-tollrate-billboard
+	In citi-eureka-tollrate-billboard open POM and add dependency :
+				spring-cloud-starter-eureka
+	In the main class Annotate @EnableEurekaClient 
+	Add bootstrap.properties with below values:
+			spring.application.name=citi-tollrate-billboard
+	In application.properties set server.port=8081
+				eureka.client.register-with-eureka=true
+				 eureka.client.fetch-registry=true
+       Go to the DashboardController.java and add:
+	        @LoadBalanced
+		@Bean
+		public RestTemplate restTemplate(RestTemplateBuilder builder){
+		return builder.build();
+		}
+
+      Create new Variable in  DashboardController.java
+        @Autowired       
+	private RestTeplate restTemplate;
+     Go to the GetTollRate() Method 
+	comment //RestTemplate rest =new RestTemplate();
+	use above create "restTemplate"	variable when calling getForObjet()
+	In getForObject(...) replace localhost:8085 with "citi-toll-service"
+     Start eurekaserver ,tollrate service ,dasboard service test http://localhost:8081/dashboard?stationid=1
+
+Step 5 --Similary Lets do the same thing with citi-eureka-fastpass-console 
+	In citi-eureka-fastpass-console  open POM and add dependency :
+				spring-cloud-starter-eureka	
+	Add bootstrap.properties with below values:
+			delete server.port=8082
+			spring.application.name=citi-fastpass-console
+	In the main class Annotate @EnableEurekaClient 
+	Go to application.properties and add below things :
+			server.port=8082
+			eureka.client.register-with-eureka=true
+		        eureka.client.fetch-registry=ture	
+	Go to the FastPassController.java
+			@LoadBalanced
+		@Bean
+		public RestTemplate restTemplate(RestTemplateBuilder builder){
+		return builder.build();
+		}
+        Create a prvate varaible in FastPassController.java 
+		 @Autowired       
+		private RestTeplate restTemplate;
+        Go to the GetFastPassCutomerDetails() method 
+		comment //RestTemplate rest =new RestTemplate();
+		use above create "restTemplate"	variable when calling getForObjet()
+		In getForObject(...) replace localhost:8086 with "citi-fastpass-service"
+	Start Fastpass Service 
+	http://localhost:8082/customerdetails?fastpassid=101
+	======================================================================================
+                             HEalthCheck
+   Step1 :Go and Open Up citi-eureka-tollrate-Service
+   Step 2:create a new class CustomHealthCheck.java
+   
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.stereotype.Component;
+
+@Component
+public class CustomHealthCheck implements HealthIndicator {
+	int errorcode = 0;
+	@Override
+	public Health health() {
+		System.out.println("health check 	performed, error code is " + errorcode);
+		if(errorcode > 4 && errorcode < 10) {
+			errorcode++;
+			return Health.down().withDetail("Custom Error Code", errorcode).build();
+		}
+		else {
+			errorcode++;
+			return Health.up().build();
+		    }}}
+
+Step 3: add below property in application.properties
+	eureka.client.healthcheck.enabled=true
+      
+      Start Eureka Server>>start citi-eureka-tollrate-service
+      See the logs of tollrate service it will show u logs like....... "health checked performed:error code is 0"
+      Wait till it becomes 5
+      Start another instance of citi-eureka-tollrate-service
+      Notice that once the Error code becomes 5 ..Service health status goes down and Eureka reveals that 
+  ================================================Protecting System from Circuit Breakers========================================================
+ 
+citi-eureka-fastpass-service returns customers
+citi-eureka-tollrate-service returns rate information
+
+Step 1: Go to calling Service citi-eureka-fastpass-console and add below Dependency
+	"spring-cloud-starter-hystrix"
+Step 2: DO the same to citi-eureka-tollrate-billboard project and add dependency=="spring-cloud-starter-hystrix"
+
+Step3 : Go to main Class of  fastpass-console add @EnableCircuitBreaker
+	got to FastPassController.java and add @HystrixCommand(fallbackMethod="getFastPassCustomerDetailsBackup") to getFastPassCustomerDetails() method
+        Define fallback method 
+	public String getFastPassCustomerDetailsBackup(@RequestParam String fastpassid, Model m) {
+		
+		FastPassCustomer c=new FastPassCustomer();
+		c.setFastPassId(fastpassid);
+		System.out.println("Fallback Operation Called");
+		m.addAttribute("customer",c);
+		return "console";
+	
+	}
+
+Step 4 : Go to main Class of tollrate-billboard add @EnableCircuitBreaker
+	got to the DashboardController.java and add @HystrixCommand(fallbackMethod="GetTollRateBakcup") on GetTollRate() method 
+        create a mething with name "GetTollRateBakcup"
+	 
+        public String GetTollRateBakcup(@RequestParam int stationId, Model m) {
+    	
+    	 System.out.println("Fallback Operation called ");
+
+         	m.addAttribute("rate","1.00");
+         	return "dashboard";
+        }
+
+Step 5 : Run Eureka and all other services Obviously cosumer one not first 
+	http://localhost:8082/customerdetails?fastpassid=101
+	http://localhost:8089/dashboard?stationId=4
+		
+      try this : http://localhost:8082/hystrix.stream
+      
+       Stop one of backing Services ..lets say eureka-tollrate-service
+       Check this again ..http://localhost:8082/dashboard?stationId=4 .... you will see effect of fallback and it will work stationid 1 only that is $1
+
+       Start tollrate-service again and stop eureka-fastpass-service(You will see only Id)
+         
+	After stopping eureka-fastpass-service when u hit http://localhost:8083/customerdetails?fastpassid=101..(You will see only Id)
+        again Check ..http://localhost:8082/dashboard?stationId=4..this will behave as expected as actual service is UP
+
+
+============================Setting up Hystrix DashBoard=================================================================================
+Create brand new spring initializer project 
+ artifact-id -citi-hystrix-dashboard
+ groupid-citi.demo
+ springboot version -1.5.10.RELEASE
+
+AddDependency While creating Project :
+	HystrixDshBoard and Finish 
+Step 1 : Open main Class and add below annotations:
+	@EnableDiscoveryClient
+        @EnableHystrixDashboard
+Step 2: Goto application.properties
+	server.port=8085
+	eureka.client.register-with-eureka=flase
+
+Start everything ..and hit http://localhost:8085/hystrix
+
+Enter http://localhost:8082/hystrix.stream
+ go and refersh ..http://localhost:8082/dashboard?stationId=4 multiple times and see hystrix dashbaord again
+
+Step 3...Now Stop eureka-fastpass-service
+        and analyse hystrix Dashboard 	
