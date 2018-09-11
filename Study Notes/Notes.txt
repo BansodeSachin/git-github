@@ -1,0 +1,108 @@
+*** Using Feign REST Client for Service Invocation. ***
+-> Its provided in Spring cloud.
+-> Can be added with Maven dependency: 
+	groupId: org.springframework.cloud
+	artifactId: spring-cloud-starter-feign
+-> @EnableFeignClients("com.in28minutes.microservices.currencyconversionservice")
+-> Create @FeignClient(name="currency-exchange-service", url="localhost:8000")
+	public interface CurrencyExchangeServiceProxy {}
+-> Feign simplifies the code to talk to REST Web services.
+
+*** Client side load balancing with Ribbon ***
+-> Can be added with Maven Dependency:
+	groupId: org.springframework.cloud
+	artifactId: spring-cloud-starter-ribbon
+-> @RibbonClient(name="currency-exchange-service")
+-> Now you can distribute load into multiple instances by adding below in application.properties:
+	currency-exchange-service.ribbon.listOfServers=http://localhost:8080,http://localhost:8081
+-> So whatever calls are made from Ribbon are distriubted among different Services running on different ports.
+
+***Eureka Naming Server***
+-> To add new instance of services, and provide load balancing with Ribbon, again we need to add that instance of service in application.properties, To avoid this and dynamically increase or decrease the service instances, we have the concept of Ribbon.
+-> Eureka Naming Server registers all microservices, and keeps track of running instances of each microservice.
+-> Create Spring Boot Initilizer project with name "netflix-eureka-naming-server", and dependencies as "Eureka Server, Config Client, Actuator, DevTools".
+-> Add Annotation in mail class as @EnableEurekaServer
+-> add properties in application.properties:
+	spring.application.name=netflix-eureka-naming-server
+	server.port=8761
+	eureka.client.register-with-eureka=false
+	eureka.client.fetch-registry=false
+-> Run the App, and open "localhost:8761" in browser to see Eureka running
+-> Add Eureka dependency to pom.xml of your microservice:
+	groupId: org.springframework.cloud
+	artifactId: spring-cloud-starter-eureka
+-> Add annotation to your microservice main class:
+	@EnableDiscoveryClient
+-> Add new property to application.properties of your microservice:
+	eureka.client.service-url.default-zone=http://localhost:8761/eureka
+
+***Introduction to Zuul API Gateway***
+-> Create Spring Boot Initilizer project with name "netflix-zuul-api-gateway-server", and dependencies as "Zuul, Eureka Discovery, Actuator, DevTools".
+-> Add annotations to Application:
+	@EnableZuulProxy
+	@EnableDiscoveryClient
+-> add properties in application.properties:
+	spring.application.name=netflix-zuul-api-dateway-server
+	server.port=8765
+	eureka.client.service-url.default-zone=http://localhost:8761/eureka
+-> Create class for logging filter
+	@Component
+	public class ZuulLoggingFilter extends ZuulFilter {}
+
+***Introduction to Distributed Tracing with Spring cloud Sleuth with Zipkin***
+-> Spring cloud Sleuth assigns unique number to each request, so it will become easy for tracing.
+-> To setup Sleuth add pom.xml dependency:
+	groupId: org.springframework.cloud
+	artifactId: spring-cloud-starter-sleuth
+-> Create AlwaysSampler Bean:
+	@Bean
+	public AlwaysSampler defaultSampler() {
+		return new AlwaysSampler();
+	}
+
+***RabbitMQ and Zipkin***
+-> To centralize logs from different Micorservices we use Zipkin Distibuted Tracing Server with RabbitMQ
+-> Installing RabbitMQ: www.rabbitmq.com/download.html
+-> In background RabbitMQ Server should be started.
+-> Installing Zipking Distributed Tracing Server: Go to Zipkin Quickstart page with google search.
+-> Copy URL and download JAR -> run using ommand java -jar zipkin.jar
+-> Once run open URL in browser: http://localhost:9411/zipkin
+-> To connect RabbitMQ with Zipkin type command: RABBIT_URI=amqp://localhost java -jar zipkin-server-2.5.2-exec.jar
+-> To connect microservices to zipkin:
+	a) Add Maven dependency to microservices:
+		-groupId: org.springframework.cloud
+		artifactId: spring-cloud-starter-sleuth-zipkin
+		-groupId: org.springframework.cloud
+		artifactId: spring-cloud-starter-bus-amqp
+-> Run your micoservices, Zuul API Gateway and Eureka server.
+-> Now trun http://localhost:9411/zipkin
+
+***Spring Cloud Bus***
+-> When your microservice configuration is updated, and you have 15 instances of that microservice running, then no need to send post request for refresh for each instance, you can do this with one step using Spring Cloud Bus.
+-> We can use RabbitMQ for this purpose.
+-> We need to add Maven dependency for this:
+	groupId: orig.springframework.cloud
+	artifactId:  spring-cloud-starter-bus-amap
+
+***Fault Tolerence with Hystrix***
+-> Add Maven Dependency to Microservice:
+	groupId: org.springframework.cloud
+	artifactId: spring-cloud-starter-hystrix
+-> Enable Hystrix in main app with @EnableHystrix
+-> To all API methods add Hystring fallback method
+	@GetMapping("/fault-tolerance-example")
+	@HystrixCommand(fallbackMethod="fallbackRetrieveConfiguration")
+	public LimitConfiguration retrirveConfiguration() {
+		throw new RuntimeException("Not Available");
+	}
+
+	public LimitConfiguration fallbackRetrieveConfiguration() {
+		throw new LimitConfiguration(9,999);
+	}
+
+***Microservices Features***
+1) Small
+2) Independently Deployable
+3) Simple Communication
+4) Stateless
+5) Automated build and deployment

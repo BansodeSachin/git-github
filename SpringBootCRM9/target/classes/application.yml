@@ -1,0 +1,12 @@
+server:
+     port: 8082
+spring:
+     mvc:
+          view:
+               prefix: /WEB-INF/view/
+               suffix: .jsp
+     datasource:
+          driver-class-name: com.mysql.jdbc.Driver 
+          url: jdbc:mysql://localhost:3306/web_customer_tracker?useSSL=false
+          username: springstudent
+          password: springstudent

@@ -1,0 +1,151 @@
+Problems with Scaling Up The Containers:
+1) Containers could not communicate with each other.
+2) Containers had to be deployed appropriately
+3) Containers had to be managed carefully
+4) Auto Scaling
+5) Distributing traffic was still challenging
+
+-> Kubernates is an open-source Container Management tool which automates container deployment, container (de)scaling & container load balacing.
+	a) Robust & Reliable
+	b) Best solution for scaling up Containers
+	c) A Container Orchestration plateform
+	d) Backed by huge Community.
+
+-> Kubernates Architecture:
+	a) Kubernetes Master
+	b) Node1, Node2, ..., Node N
+	c) Image Registry.
+-> Ways to access Kubernetes Master, is 1) UI and 2) CLI
+-> Master: controls the cluster; and the nodes in it. 
+-> Nodes: host the containers inside them; Containers are inside seperate PODS.
+-> PODS: are logical collection of containers which need to interact with each other for an application.
+
+
+***Service Mesh***
+-> Service Mesh: Network for services.
+-> It provides:
+	a) Resiliency & Efficienc.
+		Resilience features: 
+			i) Timeouts
+			ii) Retries with timeout budget
+			iii) circuit Breakers
+			iv) Health Checks
+			v) AZ-aware load balancing w/ automatic failover
+			vi) Control connection pool size and request load.
+			vii) Systematic fault injection
+	b) Traffic Control
+	c) Visibility: Grafana dashboard W/ Prometheus backend
+	d) Security
+	e) Policy Enforcement
+-> Service mesh having lightweight sidecars to manage traffic between services.
+-> Sidecars can do much more than just load balancing!
+-> ISTIO(Traffic Manager) adds fault tolerance to your application without any changes to code.
+-> HELM is a Kubernetes Package Manager
+-> Microservices and containers changed application design and deployment patterns, but along with them brought challenges like service discovery, routing, failure handling, and visibility to microservices. "Service mesh" architecture was born to handle these features. Applications are getting decoupled internally as microservices, and the responsibility of maintaining coupling between these microservices is passed to the service mesh.
+1. Deploy sample BookInfo application with Istio sidecar injected
+2. Traffic flow management using Istio Pilot - Modify service routes
+3. Access policy enforcement using Istio Mixer - Configure access control
+4. Telemetry data aggregation using Istio Mixer - Collect metrics, logs and trace spans
+4.1 Collect metrics and logs using Prometheus and Grafana
+4.2 Collect request traces using Zipkin
+5. Create an external datasource for the application
+6. Modify sample application to use the external database
+7. Deploy application microservices and Istio envoys with Egress traffic enabled
+
+Istio makes it easy to create a network of deployed services with load balancing, service-to-service authentication, monitoring, and more, without any changes in service code. You add Istio support to services by deploying a special sidecar proxy throughout your environment that intercepts all network communication between microservices, then configure and manage Istio using its control plane functionality, which includes:
+
+Automatic load balancing for HTTP, gRPC, WebSocket, and TCP traffic.
+
+Fine-grained control of traffic behavior with rich routing rules, retries, failovers, and fault injection.
+
+A pluggable policy layer and configuration API supporting access controls, rate limits and quotas.
+
+Automatic metrics, logs, and traces for all traffic within a cluster, including cluster ingress and egress.
+
+Secure service-to-service communication in a cluster with strong identity-based authentication and authorization.
+
+Istio is designed for extensibility and meets diverse deployment needs.
+
+
+EDUREKA: Kubernate Cluster Installation Steps:
+1) At Both Master & Slave:
+-> Update Your Repository
+$ sudo su
+# apt-get update
+
+-> Turn Off Swap Space
+# swapoff -a
+# nano /etc/fstab
+
+-> Update Hostname, Hosts & set Static IP
+//Update the Hostname
+# nano /etc/hostname
+//Note the IP Address
+# ifconfig
+// Update the host file
+#nano /etc/hosts
+// Set a static IP address
+# nano /etc/network/interfaces
+// Add the below at the end of the file
+auto enp0s8
+iface enp0s8 inet static
+address <IP-Address-Of-VM>
+
+
+-> Install OpenSSH Server & Docker
+// install open ssh server
+# sudo apt-get install openssh-server
+// install docker
+# sudo su
+# apt-get update
+# apt-get install -y docker.io
+
+-> Install Kubeadm, Kubelet & Kubectl
+// Run below commands before installing the Kube environment
+# apt-get update && apt-get install -y apt-transport-https curl
+# curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+# cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+# apt-get update
+
+// Install Kubeadm, Kubelet & Kubectl:
+# apt-get install -y kubelet kubeadm kubectl
+
+// Update the Kubernetes Configuration
+# nano /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+// Add the below after the last line
+Environment-"cgroup-driver-systemd/cgroup-driver-cgroupfs"
+
+
+
+
+2) Only at Master(Atleast 2 Core CPUs and 4 GB RAM):
+-> Initiate Kubernates Cluster
+sudo kubeadm init --pod-network-cidr=<POD-Network-IP> --apiserver-advertise-address=<ip-address-of-master>
+// For starting a Calino CNI: 182.168.0.0/16 or For starting a Flannel CNI: 10.244.0.0/16
+Example: sudo kubeadm init --pod-network-cidr=182.168.0.0/16 --apiserver-advertise-address=172.31.19.180
+
+// Run the following commands as normal user
+mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+// To Join From NODE SIDE ONLY:
+kubeadm join 172.31.31.23:6443 --token 8vkjzg.sxrmmxiv9snqmdzh --discovery-token-ca-cert-hash sha256:165a703d4a42f453c74019109a084544a8be0c83cd3271ef937d73017f9ca6a0
+
+// Status of Nodes
+kubectl getnodes
+//Status of PODS
+kubectl get pods --all-namespaces
+// Detailed status of PODS
+kubectl get -o wide pods --all-namespaces
+
+
+-> Install the POD Network.
+-> Setp the Kubernetes Dashboard
+
+3) Only at Slave(Atleast 1 Core CPUs and 4 GB RAM):
+-> Join the cluster.
+

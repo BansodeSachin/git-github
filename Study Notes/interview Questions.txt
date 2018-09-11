@@ -1,0 +1,459 @@
+***********************************Java********************************************
+1) Why main() in java is declared as public static void main?
+2) Difference between interfaces and abstract classes?
+3) What is Marker interface?
+4) How to create a immutable object in Java? 
+5) Difference between wait() and sleep()?
+6) What is the use of the finally block?
+7) Why there are two Date classes; one in java.util package and another in java.sql?
+8) What is the difference between creating String as new() and literal?
+9) When do you override hashCode() and equals()?
+10) Exception Hierarchy? Types of exceptions with details.
+11) 
+12) 
+13) 
+14) 
+15) 
+
+*****Java String Interview Questions:*****
+What is String in Java? String is a data type?
+What are different ways to create String Object?
+Write a method to check if input String is Palindrome?
+Write a method that will remove given character from the String?
+How can we make String upper case or lower case?
+What is String subSequence method?
+How to compare two Strings in java program?
+How to convert String to char and vice versa?
+How to convert String to byte array and vice versa?
+Can we use String in switch case?
+Write a program to print all permutations of String?
+Write a function to find out longest palindrome in a given string?
+Difference between String, StringBuffer and StringBuilder?
+Why String is immutable or final in Java
+How to Split String in java?
+Why Char array is preferred over String for storing password?
+How do you check if two Strings are equal in Java?
+What is String Pool?
+What does String intern() method do?
+Does String is thread-safe in Java?
+Why String is popular HashMap key in Java?
+String Programming Questions
+
+*****Java Multithreading Interview Questions*****
+What is the difference between Process and Thread?
+What are the benefits of multi-threaded programming?
+What is difference between user Thread and daemon Thread?
+How can we create a Thread in Java?
+What are different states in lifecycle of Thread?
+Can we call run() method of a Thread class?
+How can we pause the execution of a Thread for specific time?
+What do you understand about Thread Priority?
+What is Thread Scheduler and Time Slicing?
+What is context-switching in multi-threading?
+How can we make sure main() is the last thread to finish in Java Program?
+How does thread communicate with each other?
+Why thread communication methods wait(), notify() and notifyAll() are in Object class?
+Why wait(), notify() and notifyAll() methods have to be called from synchronized method or block?
+Why Thread sleep() and yield() methods are static?
+How can we achieve thread safety in Java?
+What is volatile keyword in Java
+Which is more preferred – Synchronized method or Synchronized block?
+How to create daemon thread in Java?
+What is ThreadLocal?
+What is Thread Group? Why it’s advised not to use it?
+What is Java Thread Dump, How can we get Java Thread dump of a Program?
+What is Deadlock? How to analyze and avoid deadlock situation?
+What is Java Timer Class? How to schedule a task to run after specific interval?
+What is Thread Pool? How can we create Thread Pool in Java?
+What will happen if we don’t override Thread class run() method?
+
+*****Java Concurrency Interview Questions*****
+What is atomic operation? What are atomic classes in Java Concurrency API?
+What is Lock interface in Java Concurrency API? What are it’s benefits over synchronization?
+What is Executors Framework?
+What is BlockingQueue? How can we implement Producer-Consumer problem using Blocking Queue?
+What is Callable and Future?
+What is FutureTask class?
+What are Concurrent Collection Classes?
+What is Executors Class?
+What are some of the improvements in Concurrency API in Java 8?
+
+*****Java Collections interview questions*****
+What are Collection related features in Java 8?
+What is Java Collections Framework? List out some benefits of Collections framework?
+What is the benefit of Generics in Collections Framework?
+What are the basic interfaces of Java Collections Framework?
+Why Collection doesn’t extend Cloneable and Serializable interfaces?
+Why Map interface doesn’t extend Collection interface?
+What is an Iterator?
+What is difference between Enumeration and Iterator interface?
+Why there is not method like Iterator.add() to add elements to the collection?
+Why Iterator don’t have a method to get next element directly without moving the cursor?
+What is different between Iterator and ListIterator?
+What are different ways to iterate over a list?
+What do you understand by iterator fail-fast property?
+What is difference between fail-fast and fail-safe?
+How to avoid ConcurrentModificationException while iterating a collection?
+Why there are no concrete implementations of Iterator interface?
+What is UnsupportedOperationException?
+How HashMap works in Java?
+What is the importance of hashCode() and equals() methods?
+Can we use any class as Map key?
+What are different Collection views provided by Map interface?
+What is difference between HashMap and Hashtable?
+How to decide between HashMap and TreeMap?
+What are similarities and difference between ArrayList and Vector?
+What is difference between Array and ArrayList? When will you use Array over ArrayList?
+What is difference between ArrayList and LinkedList?
+Which collection classes provide random access of it’s elements?
+What is EnumSet?
+Which collection classes are thread-safe?
+What are concurrent Collection Classes?
+What is BlockingQueue?
+What is Queue and Stack, list their differences?
+What is Collections Class?
+What is Comparable and Comparator interface?
+What is difference between Comparable and Comparator interface?
+How can we sort a list of Objects?
+While passing a Collection as argument to a function, how can we make sure the function will not be able to modify it?
+How can we create a synchronized collection from given collection?
+What are common algorithms implemented in Collections Framework?
+What is Big-O notation? Give some examples?
+What are best practices related to Java Collections Framework?
+What is Java Priority Queue?
+Why can’t we write code as List<Number> numbers = new ArrayList<Integer>();?
+Why can’t we create generic array? or write code as List<Integer>[] array = new ArrayList<Integer>[10];
+
+*****Java Exception Handling Interview Questions*****
+What is Exception in Java?
+What are the Exception Handling Keywords in Java?
+Explain Java Exception Hierarchy?
+What are important methods of Java Exception Class?
+Explain Java 7 ARM Feature and multi-catch block?
+What is difference between Checked and Unchecked Exception in Java?
+What is difference between throw and throws keyword in Java?
+How to write custom exception in Java?
+What is OutOfMemoryError in Java?
+What are different scenarios causing “Exception in thread main”?
+What is difference between final, finally and finalize in Java?
+What happens when exception is thrown by main method?
+Can we have an empty catch block?
+Provide some Java Exception Handling Best Practices?
+What is the problem with below programs and how do we fix it?
+
+
+*****General Core Java Questions*****
+What are the important features of Java 10 release?
+What are the important features of Java 9 release?
+What are the important features of Java 8 release?
+Name some OOPS Concepts in Java?
+What do you mean by platform independence of Java?
+What is JVM and is it platform independent?
+What is the difference between JDK and JVM?
+What is the difference between JVM and JRE?
+Which class is the superclass of all classes?
+Why Java doesn’t support multiple inheritance?
+Why Java is not pure Object Oriented language?
+What is difference between path and classpath variables?
+What is the importance of main method in Java?
+What is overloading and overriding in java?
+Can we overload main method?
+Can we have multiple public classes in a java source file?
+What is Java Package and which package is imported by default?
+What are access modifiers?
+What is final keyword?
+What is static keyword?
+What is finally and finalize in java?
+Can we declare a class as static?
+What is static import?
+What is try-with-resources in java?
+What is multi-catch block in java?
+What is static block?
+What is an interface?
+What is an abstract class?
+What is the difference between abstract class and interface?
+Can an interface implement or extend another interface?
+What is Marker interface?
+What are Wrapper classes?
+What is Enum in Java?
+What is Java Annotations?
+What is Java Reflection API? Why it’s so important to have?
+What is composition in java?
+What is the benefit of Composition over Inheritance?
+How to sort a collection of custom Objects in Java?
+What is inner class in java?
+What is anonymous inner class?
+What is Classloader in Java?
+What are different types of classloaders?
+What is ternary operator in java?
+What does super keyword do?
+What is break and continue statement?
+What is this keyword?
+What is default constructor?
+Can we have try without catch block?
+What is Garbage Collection?
+What is Serialization and Deserialization?
+How to run a JAR file through command prompt?
+What is the use of System class?
+What is instanceof keyword?
+Can we use String with switch case?
+Java is Pass by Value or Pass by Reference?
+What is difference between Heap and Stack Memory?
+Java Compiler is stored in JDK, JRE or JVM?
+What will be the output of following programs?
+
+
+**********************************Spring*******************************************
+What is Spring Framework?
+What are some of the important features and advantages of Spring Framework?
+What do you understand by Dependency Injection?
+How do we implement DI in Spring Framework?
+What are the benefits of using Spring Tool Suite?
+Name some of the important Spring Modules?
+What do you understand by Aspect Oriented Programming?
+What is Aspect, Advice, Pointcut, JointPoint and Advice Arguments in AOP?
+What is the difference between Spring AOP and AspectJ AOP?
+What is Spring IoC Container?
+What is a Spring Bean?
+What is the importance of Spring bean configuration file?
+What are different ways to configure a class as Spring Bean?
+What are different scopes of Spring Bean?
+What is Spring Bean life cycle?
+How to get ServletContext and ServletConfig object in a Spring Bean?
+What is Bean wiring and @Autowired annotation?
+What are different types of Spring Bean autowiring?
+Does Spring Bean provide thread safety?
+What is a Controller in Spring MVC?
+What’s the difference between @Component, @Repository & @Service annotations in Spring?
+What is DispatcherServlet and ContextLoaderListener?
+What is ViewResolver in Spring?
+What is a MultipartResolver and when its used?
+How to handle exceptions in Spring MVC Framework?
+How to create ApplicationContext in a Java Program?
+Can we have multiple Spring configuration files?
+What is ContextLoaderListener?
+What are the minimum configurations needed to create Spring MVC application?
+How would you relate Spring MVC Framework to MVC architecture?
+How to achieve localization in Spring MVC applications?
+How can we use Spring to create Restful Web Service returning JSON response?
+What are some of the important Spring annotations you have used?
+Can we send an Object as the response of Controller handler method?
+How to upload file in Spring MVC Application?
+How to validate form data in Spring Web MVC Framework?
+What is Spring MVC Interceptor and how to use it?
+What is Spring JdbcTemplate class and how to use it?
+How to use Tomcat JNDI DataSource in Spring Web Application?
+How would you achieve Transaction Management in Spring?
+What is Spring DAO?
+How to integrate Spring and Hibernate Frameworks?
+What is Spring Security?
+How to inject a java.util.Properties into a Spring Bean?
+Name some of the design patterns used in Spring Framework?
+What are some of the best practices for Spring Framework?
+
+
+*********************************Hibernate*****************************************
+What is Hibernate Framework?
+What is Java Persistence API (JPA)?
+What are the important benefits of using Hibernate Framework?
+What are the advantages of Hibernate over JDBC?
+Name some important interfaces of Hibernate framework?
+What is hibernate configuration file?
+What is hibernate mapping file?
+Name some important annotations used for Hibernate mapping?
+What is Hibernate SessionFactory and how to configure it?
+Hibernate SessionFactory is thread safe?
+What is Hibernate Session and how to get it?
+Hibernate Session is thread safe?
+What is difference between openSession and getCurrentSession?
+What is difference between Hibernate Session get() and load() method?
+What is hibernate caching? Explain Hibernate first level cache?
+How to configure Hibernate Second Level Cache using EHCache?
+What are different states of an entity bean?
+What is use of Hibernate Session merge() call?
+What is difference between Hibernate save(), saveOrUpdate() and persist() methods?
+What will happen if we don’t have no-args constructor in Entity bean?
+What is difference between sorted collection and ordered collection, which one is better?
+What are the collection types in Hibernate?
+How to implement Joins in Hibernate?
+Why we should not make Entity Class final?
+What is HQL and what are it’s benefits?
+What is Query Cache in Hibernate?
+Can we execute native sql query in hibernate?
+What is the benefit of native sql query support in hibernate?
+What is Named SQL Query?
+What are the benefits of Named SQL Query?
+What is the benefit of Hibernate Criteria API?
+How to log hibernate generated sql queries in log files?
+What is Hibernate Proxy and how it helps in lazy loading?
+How to implement relationships in hibernate?
+How transaction management works in Hibernate?
+What is cascading and what are different types of cascading?
+How to integrate log4j logging in hibernate application?
+How to use application server JNDI DataSource with Hibernate framework?
+How to integrate Hibernate and Spring frameworks?
+What is HibernateTemplate class?
+How to integrate Hibernate with Servlet or Struts2 web applications?
+Which design patterns are used in Hibernate framework?
+What are best practices to follow with Hibernate framework?
+What is Hibernate Validator Framework?
+What is the benefit of Hibernate Tools Eclipse plugin?
+
+
+********************************Spring Boot****************************************
+1.1 What is Spring Boot?
+1.2 Why we need Spring Boot?
+1.3 Spring Boot Components
+1.4 What is Spring Boot Starter?
+1.5 What is Spring Boot AutoConfigurator?
+1.6 What is Spring Boot Actuator?
+1.7 What is Spring Boot CLI?
+1.8 What is Spring Boot Initilizr?
+1.9 Why we need Spring Boot Initilizr?
+1.10 Spring Boot With Maven/Gradle?
+1.11 What is “Transitively Dependency Resolution Management”?
+
+Q: What are the use of @EnableAutoConfiguration annotation?
+Ans-> This annotation tells Spring Boot to “guess” how you will want to configure Spring, based on the jar dependencies that you have added.
+
+Q: How to create an executable jar using spring boot?
+Q: What is Spring Boot Starter?
+Q: What is spring-boot-starter-parent?
+Q: What is spring-boot-starter-web?
+
+Q: What is the use of @SpringBootApplication annotation?
+Ans-> Since many spring Boot developers have their main class annotated with @Configuration, @EnableAutoConfiguration and @ComponentScan, spring boot provides you a new annotation @SpringBootApplication as replacement.
+
+Q: What is spring-boot-devtools ?
+Ans-> Applications that use spring-boot-devtools will automatically restart whenever files on the classpath change. This can be a useful feature when working in an IDE as it gives a very fast feedback loop for code changes.
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-devtools</artifactId>
+<optional>true</optional>
+</dependency>
+
+Q: What are Profiles in spring boot?
+Ans: Spring Profiles provide a way to segregate parts of your application configuration and make it only available in certain environments. Any @Component or @Configuration can be marked with @Profile to limit when it is loaded.
+
+Q: Spring Boot Actuator?
+Ans: Spring Boot Actuator help you monitor and manage your application health when you push it to production.
+
+Q: How to configure logging in spring boot?
+Ans: Spring Boot can control the logging level
+– Just set it in application.properties
+• Works with most logging frameworks
+– Java Util Logging, Logback, Log4J, Log4J2
+logging.level.org.springframework=DEBUG
+logging.level.com.acme.your.code=INFO
+
+Q: How to reload my changes on Spring Boot without having to restart server?
+Ans: Include following maven dependency in the application.
+<dependency>
+ <groupId>org.springframework</groupId>
+ <artifactId>springloaded</artifactId>
+ <version>1.2.6.RELEASE</version>
+</dependency>
+
+Q: How to configure datasource using Spring boot?
+Ans: spring.datasource.url=jdbc:mysql://localhost/test
+spring.datasource.username=dbuser
+spring.datasource.password=dbpass
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+
+
+************************************Rest Webservices********************************
+
+
+
+
+
+
+
+
+
+******************************************************************************
+Core Java Durge
+***************
+
+-> Language Fundamentals:
+	1) Identifiers:
+		-> starts with alphabets, $ or _
+		-> can not be same as keywords
+		-> can be same as Class or Interface names.
+		-> case sensitive
+	2) Reserved Words
+		-> 53 Reserved Words/Keywords
+		-> 50 Keywords -> 48 Used Keywords and 2 Unused Keywords
+		-> 2 Unused Keywords: goto and const(If used compiler time error will be given)
+		-> 3 Reserved Literals: true, false, null
+		-> 48 Used Keywords:
+		-> Keywords for Datatype(8): bye, short, int, long, float, double, boolean, char
+		-> Keywords for Flow Control(11): if, else, switch, case, default, while, do, for, break, continue, return
+		-> Keywords for Modifiers(11): public, private, protected, static, final, abstract, synchronized, native, strictfp, transient, volatile
+		-> Keywords for Exception Handling(6): try, catch, finally, throw, throws, assert
+		-> Class related keywords(6): class, interface, extends, implements, package, import
+		-> Object related keyword(4): new, instanceof, super, this
+		-> return type keyword(1): void
+		-> enum keyword(1): enum
+	3) Data Types
+		-> Java is strongly Typed.
+		-> Java is not purely OOP, as it is not supporting some of OOPS features like, Operator Overloading, and multiple inheritance, as well as we are using premitive data types some times.
+		-> Primitive Data Types(8)
+			a) Numeric Data Types:
+				i) Integral Data Types: byte, short, int, long
+				ii) Floating point data type: float, double
+			b) non Numeric Data Types: char, boolean
+		-> Except boolean, and char remaining considered as Signed Data Types.
+		a) byte: (1 byte=8 bits) -- Range: -2^7 to 2^7-1(-128 to +127)
+			-> Sign Bit: 0 for + and 1 for -
+			-> Positive numbers directly registered in memory, but negative numbers registered in two's complement form.
+		b) short: (2 bytes=16 bits) -- Range: -2^15 to 2^15-1(-32768 to 32767)
+		c) int: (4 bytes = 32 bits) -- Range: -2^31(-2147483648) to 2^31(2147483647)
+		d) long: (8 bytes = 64 bits) -- Range: -2^63 to 2^63-1
+		e) float: (4 bytes = 32 bits) -- Range: -1.7e38 to 1.7e38(Less Accurate)
+		f) double: (8 bytes = 64 bits) -- Range: -3.4e308 to 3.4e308(More accurate)
+		g) boolean: (NA) -- Range: NA
+		h) char: (2 bytes=16 bits) Range: 0 to 65535 Because Java is Unicode based so its size is 2 bytes.
+	4) Literals
+		a) Decimal Literals(Base-10): Example: Allowed Digits: 0 to 9
+		b) Octal Form(Base-8): Example: Allowed digits: 0 to 7(starts with 0)
+		c) Hexa Decimal Form(Base-16): Example: Allowed digits: 0 to 9 and a to f(starts with 0x)
+		-> 1.7 New Features in Literals: We can define binary literals with 0b or 0B, and we can use _ between digits to improve readability.
+		-> Byte->Short&Char-> Int-> long-> float-> double
+
+	5) Arrays:
+		a) Introduction.
+		b) Array Declaration.
+		c) Array Creation.
+		d) Array Initialization
+		e) Array Declaration, Creation, and Initialization in signle line.
+		f) length vs length()
+		g) Anonymours Arrays
+		h) Array Element Assignments
+		i) Array Variable Assignments
+			a) Two Dimentional Array.
+			b) 
+			c) 
+			d) 
+	6) Types of Variables
+	7) Var-arg methods
+	8) main methods
+	9) Command Line Argument
+	10)Java Coding Standard
+
+
+-> JVM Architecture:
+
+
+-> OOPS Concept:
+
+
+-> Java.lang package:
+
+
+-> Interface and Abstract Class
+
+
+-> Declarations and access modifiers.
+
+

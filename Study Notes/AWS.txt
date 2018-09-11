@@ -1,0 +1,129 @@
+***Weightage***
+1) Deployment - 22%
+2) Security - 26%
+3) Development with AWS Services - 30%
+4) Refactoring - 10%
+5) Monitoring and Troubleshooting - 12%
+
+130 Minutes
+65 Questions
+Passing marks 720/1000
+
+
+***IAM***
+-> IAM stands for Identity Access Management.
+-> IAM Service is provided on AWS
+-> Sample users sign-in link: https://650364155923.signin.aws.amazon.com/console
+-> In above URL 650364155923 is your customer number.
+-> You can also customize this link customer number
+
+***EC2***
+-> EC2 stands for Elastic Compute Cloud.
+-> EC2 Options:
+1) On demand: Allows you to pay a fixed rate by the hour (or by the second) with no commitment.
+2) Reserved: Provide you with a capacity reservation, and offer a significant discount on the hourly charge for an instance. 1 Year or 3 Year Terms
+3) Spot: enables you to bid whatever price you want for instance capacity, providing for even greater savings if your applications have flexible start and end times.
+4) Dedicated Hosts: Physical EC2 server dedicated for your use. Dedicated Hosts can help you reduce costs by allowing you to use your existing server-bound software licenses.
+-> EC2 Instance Types:
+F1
+I3
+G3
+H1
+T2
+D2
+R4
+M5
+C5
+P3
+X1
+-> To Remember Instance Types:
+F for FPGA
+I for IOPS
+G - Graphics
+H - High Disk Throughput
+T cheap general purposer(think T2 micro)
+D for density
+R for RAM
+M - main choice for general purpose apps
+C for Compute
+P - Graphics (think Pics)
+X - Extreme Memory
+
+-> EBS - For adding volume storage to your EC2 instance.
+-> EBS Volume Types:
+	1) SSD:
+		a) General Purpose SSD(GP2)
+		b) Provisioned IOPS SSD(IO1)
+	2) Magnetic:
+		c) Throughput Optimized HDD(ST1)
+		d) Cold HDD
+		e) Magnetic(Standard)
+-> If a Spot instance is terminated by Amazon EC2, you will not be charged for a partial hour of usage. However, if you terminate the instance yourself, you will be charged for the complete hour in which the instance ran.
+-> Types of Load Balancer:
+	a) Application Load Balancer
+	b) Network Load Balancer
+	c) classic Load Balancer
+-> 504 Error means the gateway has timed out. This means that the application not responding within the idle timeout period.
+-> If you need the IPv4 address of your end user, look for the X-Forwarded-For header.
+-> CLI:
+>>> ssh ubuntu@18.222.226.161 -i MyDockerKey.pem
+>>> sudo su
+>>> aws s3 ls
+>>> aws configure
+>>> aws s3 mb s3://acloudguru1234-rk
+>>> aws s3 ls
+>>> echo "hello cloud gurus" > hello.txt
+>>> ls
+>>> aws s3 cp hello.txt s3://acloudguru1234-rk
+>>> aws s3 ls s3://acloudguru1234-rk
+>>> aws configure
+
+-> Least Privilege: Always give your users the minium amount of access required.
+-> Create Groups: Assign your users to groups. Your users will automatically inherit the permissions of the group. The groups permissions are assigned using policy documents.
+-> Secret Access Key: You will see this only once. If you do not save it, you can delete the Key Pair and regenerate it. You will need to run aws configure again.
+-> Do not use just one access key: Do not create just once access key and share that with all your developers. If someone leaves the company on bad terms, then you will nedd to delete the key and create a new one and every developer would then need to update their keys. Instead create one key pair per developer.
+-> You can use the CLI on your PC: You can install the CLI on your Mac, Linux or Windows PC. I personally use 3 to store all my files up in the cloud.
+
+-> Roles:
+-> Roles allow you to not use Access Key ID's and Secret Access Keys
+-> Roles are preferred from a security perspective.
+-> Roles are controlled by policies.
+-> You can change a policy on a role and it will take immediate affect.
+-> You can attach and detach roles to running EC2 instances without having to stop or terminate these instances.
+
+-> RDS Types:
+a) SQL Server
+b) Oracle
+c) MySQL Server
+d) PostgreSQL
+e) Amazon Aurora
+f) MariaDB
+
+-> Elasticache: Is a web service that makes it easy to deploy, operate, and scale a in-memory cache in the cloud. The service improves the performance of web applications by allowing you to retrive information from fast, managed, in-memory caches, instead of relying on slower disk-based databases.
+-> Elasticache supports two open source in-memory caching engines:
+	a) Memcached
+	b) Redis
+-> DynamoDB: No SQL
+-> RedShift: OLAP(Online Analytics Processing)
+
+-> Multi-AZ is for Disaster Recovery Only.
+
+-> Types of Elasticache:
+	a) Memcached
+	b) Redis
+-> Use Memcached If:
+	- Object caching is your primary goal.
+	- You want to keep things as simple as possible
+	- You want to scale your cache horizontally (Scale Out)
+-> Use Redis If:
+	- You have advanced data types, such as lists, hashes, and sets.
+	- You are doing data sorting and ranking (such as leader boards)
+	- Data Persistence
+	- Multi AZ
+	- Pub/Sub capabilities are needed.
+
+
+
+
+
+

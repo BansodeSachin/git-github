@@ -1,0 +1,109 @@
+***Programs***
+1) WAP to find first unique element from array:
+-> public class Test5 {
+
+	public static void main(String[] args) {
+		
+		int a[] = {30,10,20,40,50,30,10,40};
+		
+		Map<Integer, Integer> map = new LinkedHashMap<Integer, Integer>();
+		
+		for(int i : a) {
+			
+			map.put(i, map.containsKey(i) ? 2 : 1);
+		}
+		
+		System.out.println(map);
+		Integer result=0;
+		for(Integer i : a) {
+			if(map.get(i) == 1) {
+				result=i;
+				break;
+			}
+		}
+		System.out.println("result = " + result);
+	}
+
+}
+
+
+2) Bubble Sort:
+-> public static int[] bubbleSort(int a[]) {
+		for (int i = a.length-1 ; i >=0  ; i--) {
+			
+			for(int j=1 ; j <=i ; j++) {
+				
+				if(a[j-1] > a[j]) {
+					a[j-1] = a[j-1] + a[j];
+					a[j] = a[j-1] - a[j];
+					a[j-1] = a[j-1] - a[j];
+				}
+				
+			}
+		}
+		
+		return a;
+	}
+
+3) Selection Sort:
+-> public static int[] selectionSort(int a[]) {
+		
+		for (int i=0 ; i<a.length-1 ; i++) {
+			int min = i;
+			for(int j=i+1 ; j < a.length; j++) {
+				if(a[j] < a[min]) {
+					min = j;
+				}
+			}
+			a[i] = a[i] + a[min];
+			a[min] = a[i] - a[min];
+			a[i] = a[i] - a[min];
+		}
+		
+		return a;
+	} 
+
+4) Insertion Sort:
+-> public static int[] insertionSort(int a[]) {
+		
+		for(int i=1 ; i<a.length ; i++) {
+			
+			int index = a[i];
+			int j = i;
+			
+			while(j > 0 && a[j-1] > index) {
+				a[j] = a[j-1];
+				j--;
+			}
+			a[j] = index;
+		}
+		
+		return a;
+	}
+
+5) Merge Sort:
+-> 
+
+6) Quick Sort:
+-> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+***Questions***

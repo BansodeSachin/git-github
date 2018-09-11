@@ -1,0 +1,46 @@
+***Java 8 Features***
+-> 1.7 Rule: 
+	a) Every method in interface is by default "public abstract".
+	b) Every variable in interface is by default "public static final".
+-> 1.8 Features:
+	a) Lambda Expression
+	b) Functional Interfaces
+	c) Default Methods in interfaces
+	d) Static Methods in interfaces
+	e) Predefined Functional Interfaces: Predicate, Function, Consumer
+	f) Method Reference & Constructor Reference By double colon(::) operator
+	g) Stream API
+	h) Date and Time API(JODA API)
+
+***Lambda Expressions***
+-> Anaonymous methods are known as Lambda expressions.
+-> Methods with No name, No Return type and no modifiers are known as Lambda expressions.
+Example1:
+-> public void m1() {
+		System.out.println("Hello World");
+	}
+-> Convert above method to lamda expression:
+-> () -> System.out.println("Hello World");
+
+Example2:
+-> public void add(int a, int b) {
+		System.out.println(a+b);
+	}
+-> Convert above method to lamda expression:
+-> (int a, int b) -> System.out.println(a+b);
+-> (a,b) -> System.out.println(a+b);
+
+Example3:
+-> public int square(int n) {
+		return n*n;
+	}
+-> Convert above method to lamda expression:
+-> (int n) -> {return n*n;}
+-> (n) -> {return n*n;}
+-> n -> n*n;
+
+-> How to invoke lambda expressions:
+-> Funtional Interface: The interfaces which having single abstract method, are called Functional Interfaces.
+-> Java 1.8 version onwards we can write default and static methods inside interface as well, prior to java 1.8, only abstract methods are allowed.
+-> @FunctionalInterface annotation will let compiler know that, this is functional interface.
+-> 

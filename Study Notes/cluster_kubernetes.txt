@@ -1,0 +1,49 @@
+Kubernetes Cluster : We will ne launching 3 ubuntu nodes 16.0.4 xenial  at AWS and at Node 1:
+from Community AMI (ubuntu-xenial-16.04-amd64-server-20180509)
+
+cat /etc/hostname
+nano /etc/hostname
+kubemaster
+
+nano /etc/hosts
+kubemaster
+===================================================================================
+apt-get update && apt-get install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+apt-get update 
+
+apt-get install docker.io kubeadm kubectl kubernetes-cni
+
+kubeadm init
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of machines by running the following on each node
+as root:
+
+kubectl apply --filename https://git.io/weave-kube-1.6
+
+
+kubeadm join 172.31.21.43:6443 --token hm9gzl.8x2z1zesqocpwi6o --discovery-token-ca-cert-hash sha256:67c6d2889ffae8faa2835de2e8369830a30a4e81843afe167d71f458f20a60af
+
+
+kubectl get nodes
+kubectl get pods --all-namespaces
+ 
+======================================PODS===============================================
+
+kubectl expose rc hello-rc --name=hello-svc --target-port=8080 --type=NodePort
+
+

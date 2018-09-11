@@ -1,0 +1,51 @@
+*******Modifiers Notes:********
+1) All Modifiers(12): private, <default>, protected, public, final, abstract, static, synchronized, native, strictfp, transient, volatile.
+2) Applicable Modifiers for Outer Classes(5): public, <default>, final, abstract, strictfp
+3) Applicable Modifiers for Inner Classes(8): public, <default>, final, abstract, strictfp, private, protected, static
+4) final modifier applicable for classes, methods and variables.
+5) Every method present inside a final class is always final bydefault, but every variable present in final class need not be final.
+6) abstract modifier applicable for classes and methods but not for variables.
+7) Illegigal Combinatations for abstract modifier for methods: final, static, synchronized, native, strictfp, private
+8) We can write constructors inside abstract class to instantiate values at class loading, but we cannot create object or instance of abstract class.
+9) final and abstract combination is illegal for classes.
+10) final class Can't have abstract methods where as abstract class can contain final methods.
+11) strictfp(Strict Floating Point) modifier applicable for classes and methods but not for variables.
+12) abstract and strictfp combination valid for classes but not valid for methods.
+13) private and abstract combination is illegal for methods.
+14) We should initialize final instance variables before constructor completion, a) at the time of declaration, b) inside instance block, c) inside constructor, else we will get compile time error.
+15) Before class loading comletion, we should initialize final static variables, a) At the time of declaration, b) Inside static block.
+16) We should initialize final local variable before using only.
+17) static and instance variables default values assigned by JVM bydefault, but local variable value is not added by JVM.
+18) Only applicable modifier for local variable is final, else we will get compile time error.
+19) static modifier applicable for methods, variables and Inner classes(Not for outer classes)
+20) Static Members can be accessed from both instance and static areas, because they are loaded at class loading time, but instance members can only accessed from instance area, and not from static area because at the time of static area execution they are not available.
+21) If method contains atleast one instance member then only keep that method as instance method, else always keep methods as static including utility methods as well.
+22) static and abstract modifier is illegal combination for methods.
+23) synchronized modifier applicable for methods and blocks only, but not for variables and class.
+24) native modifier only applicable for methods, cant be applied anywhere else.
+25) abstract-native combination is illegal
+26) strictfp-native combination is illegal
+27) transient modifier applicable only for variables, not applicable for classes and methods.
+28) volatile modifier applicable only for variables, not applicable for classes and methods.
+29) By default Interfaces are implicitely abstract, we can't add final modifier to interface, except that exeverything is same as class.
+30) By default Enums are implicitely final, so we can't add abstract modifier to enums, also we can't add final keyword explicitly, except abstract and final exeverything is same as class.
+31) Only applicable modifiers for Constructors are public, private, protected and <default>
+
+
+OOPS Concept Titles:
+1) Data Hiding
+2) Abstraction
+3) Encapsulation
+4) Tightly Encapsulated Class
+5) IS-A Relationship
+6) HAS-A Relationship
+7) Method Signature
+8) Overloading
+9) Overriding
+10) Method Hiding
+11) Static Control Flow
+12) Instance Control Flow
+13) Constructors
+14) Coupling
+15) Cohesio
+16) Type Casting
