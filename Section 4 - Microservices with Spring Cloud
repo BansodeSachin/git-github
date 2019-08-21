@@ -1231,3 +1231,146 @@ eureka.client.service-url.default-zone=http://localhost:8761/eureka
 -> Ribbon: To enable to load balancing(Client Side Load Balancing)
 -> Eureka: Instead of hardcoding URL's, we have registered and discovered URL's from Eureka Naming Server.(Service Registration and Service Discovery)
 
+
+*STEP 30: Introduction to API Gateways:
+-> Responsibilities of API Gateways:
+a) Authentication, authorization and security.
+b) Rate Limits
+c) Fault Tolearation
+d) Service Aggregation
+
+-> It aggregates different services and provides one service call to the external consumer.
+-> We will not directly allow end user request to hit our microservices, they will hit our api-gateway first, then api-gateway will fetch the response from our microservices and provide it back to the end user.
+
+
+*STEP 31: Setting up Zuul API Gateway:
+-> Go to "start.spring.io" and create new project.
+-> Maven Project -> Version at least 2.0.0
+-> group: com.sachin.microservices
+   Artifact: netflix-zuul-api-gateway-server
+   dependencies: zuul, Eureka Discovery, Actuator, Devtools
+-> Generate and import maven project into eclipse. 
+
+-> Update main class "NetflixZuulApiGatewayServerApplication.java" as below:
+code:
+package com.sachin.microservices.netflixzuulapigatewayserver;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+
+@EnableZuulProxy
+@EnableDiscoveryClient
+@SpringBootApplication
+public class NetflixZuulApiGatewayServerApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(NetflixZuulApiGatewayServerApplication.class, args);
+	}
+
+}
+
+-> update application.properties for netflix-zuul-api-gateway-server as below:
+code:
+spring.application.name=netflix-zuul-api-gateway-server
+server.port=8765
+
+eureka.client.service-url.default-zone=http://localhost:8761/eureka
+
+
+*STEP 32: Implementing Zuul Logging Filter:
+-> We will log any request that comes to this in this step.
+-> Here filter type can be "pre", "post", "error"
+-> Create new class "ZuulLoggingFilter.java" in package "com.sachin.microservices.netflixzuulapigatewayserver" as below:
+code:
+package com.sachin.microservices.netflixzuulapigatewayserver;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.exception.ZuulException;
+
+@Component
+public class ZuulLoggingFilter extends ZuulFilter {
+
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@Override
+	public boolean shouldFilter() {
+		return true;
+	}
+
+	@Override
+	public Object run() throws ZuulException {
+		
+		HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
+	
+		logger.info("request -> {} request uri -> {} ", request, request.getRequestURI());
+		
+		return null;
+	}
+
+	@Override
+	public String filterType() {
+		return "pre";
+	}
+
+	@Override
+	public int filterOrder() {
+		return 1;
+	}
+}
+
+
+*STEP 33: Executing a request through Zuul API Gateway:
+-> Execute Eureka Naming Server on 8761
+-> Run Currency Exchange Service on 8000
+-> Run Currency Conversion Service on 8100
+-> Now run the Zuul API Gateway which will run on port 8765
+
+-> Now Test "http://localhost:8761/" and test whether zuul is also registered with Eureka.
+-> Test the URL "http://localhost:8000/currency-exchange/from/EUR/to/INR"
+-> Now for above URL, we will configure it to go through Zuul API Gateway.
+-> So you should use URL with below syantaz:
+http://localhost:8765/{application-name}/{uri}
+(You can get application name from application.properties or eureka naming server)
+-> So test your final url with zuul as below:
+http://localhost:8765/currency-exchange-service/currency-exchange/from/EUR/to/INR
+
+-> Also check the logs for Zuul Application, it will show you the printed info as "request uri -> /currency-exchange-service/currency-exchange/from/EUR/to/INR "
+
+
+*STEP 34: Setting up Zuul API Gateway between microservice invocations:
+-> In this step, we will conver the call happening from conversion service to exchange service in the code, we will make sure request will pass through Zuul Gateway.
+-> Update "CurrencyExchangeServiceProxy.java" from currency-conversion-service project.
+code:
+package com.sachin.microservices.currencyconversionservice;
+
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+//@FeignClient(name="currency-exchange-service", url="localhost:8000")
+//@FeignClient(name="currency-exchange-service")
+@FeignClient(name="netflix-zuul-api-gateway-server")
+@RibbonClient(name="currency-exchange-service")
+public interface CurrencyExchangeServiceProxy {
+	
+	//@GetMapping("currency-exchange/from/{from}/to/{to}")
+	@GetMapping("currency-exchange-service/currency-exchange/from/{from}/to/{to}")
+	public CurrencyConversionBean retrieveExchangeValue(@PathVariable("from") String from, @PathVariable("to") String to);
+}
+
+-> Run the Conversion, exchange, eureka and zuul.
+-> Test the URL in browser: http://localhost:8100/currency-converter-feign/from/USD/to/INR/quantity/1000
+-> And test the zuul API Gateway logs, and verify its going through zuul.
+
+-> If you want API Gateway before calling Conversion service as well then use below URL:
+"http://localhost:8765/currency-conversion-service/currency-converter-feign/from/USD/to/INR/quantity/1000"
