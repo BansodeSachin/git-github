@@ -1,0 +1,1233 @@
+Topics:
+1) Spring Cloud Config Server and Bus.
+2) Load Balancing with Ribbon and Feign.
+3) Implement Naming Server with Eureka.
+4) Implementing API Gateway with Zuul.
+5) Distributed Tracing with Zipkin.
+6) Fault Tolerence with Hystrix.
+
+*Github Repository for this course:
+https://github.com/in28minutes/spring-microservices
+
+
+Ports
+Application	Port
+Limits Service	8080, 8081, ...
+Spring Cloud Config Server	8888
+Currency Exchange Service	8000, 8001, 8002, ..
+Currency Conversion Service	8100, 8101, 8102, ...
+Netflix Eureka Naming Server	8761
+Netflix Zuul API Gateway Server	8765
+Zipkin Distributed Tracing Server	9411
+
+
+URLs
+Application	URL
+a) Limits Service	http://localhost:8080/limits POST -> http://localhost:8080/actuator/refresh
+
+b) Spring Cloud Config Server	http://localhost:8888/limits-service/default http://localhost:8888/limits-service/dev
+
+c) Currency Converter Service - Direct Call	http://localhost:8100/currency-converter/from/USD/to/INR/quantity/10
+
+d) Currency Converter Service - Feign	http://localhost:8100/currency-converter-feign/from/EUR/to/INR/quantity/10000
+
+e) Currency Exchange Service	http://localhost:8000/currency-exchange/from/EUR/to/INR http://localhost:8001/currency-exchange/from/USD/to/INR
+
+f) Eureka	http://localhost:8761/
+
+g) Zuul - Currency Exchange & Exchange Services	http://localhost:8765/currency-exchange-service/currency-exchange/from/EUR/to/INR 
+http://localhost:8765/currency-conversion-service/currency-converter-feign/from/USD/to/INR/quantity/10
+
+h) Zipkin	http://localhost:9411/zipkin/
+
+i) Spring Cloud Bus Refresh	http://localhost:8080/bus/refresh
+
+
+
+*Microservice:
+-> It is small individual deployable unit, can be written in any language.
+-> There can be one or more instances that will be available in Microservice architecture.
+
+*Challenges with Microservices:
+1) Bounded Context: It is much more difficult to decide boundries for microservices while designing microservices, it comes with knowledge and experience.
+2) Configuration Management: Tons of configuration required for multiple microservice.
+3) Dynamic Scale up and scale down: Different Microservice can have dynamic load, so we need dynamic load balancing for each microservice based on the load.
+4) Visibility: Identifying the bug, from the centralized log and monitoring for microservice for debugging.
+5) Pack of Cards: If microservices are not designed properly then it causes the entire application to fail easily, to resolve this we should have fault tolerence.
+
+
+*Spring Cloud:
+-> Home page "cloud.spring.io"
+-> We will learn about Spring Cloud Netflix.
+-> In this section we will create 3 microservices:
+	a) CurrencyCalculationService
+	b) CurrencyExchangeService
+	c) LimitsService
+
+*Solution for our Challenges:
+1) Configuration Management:
+-> a) Spring Cloud Config Server: Spring Cloud Config Server store all the configuration for all 3 microservices, and it connects to all 3 microservices, and it stores configuration in Git repository. So that it will easy to manage configuration for all microservices.
+
+2) Dynamic Scale Up and Scale Down:
+-> a) Naming Server(Eureka)
+   b) Ribbon(Client Side Load Balancing)
+   c) Feign(Easier REST Clients)
+-> With Ribbon, it will distribute the REST calls to multiple instances of Microservice, for example if CurrentCalculationService connecting to CurrencyExchangeService which having 3 instances, then request are first gone to Ribbon Load Balancer and then it will balance and send to 3 microservices.
+-> Eureka is Naming server, and all microservices and all its instances are registered with Eureka naming server.
+-> Eureka having 2 important features Service Registration and Service Discovery.
+
+3) Visibility and Monitoring:
+   a) Zipkin Distributed Tracing
+   b) Netflix API Gateway
+-> We will use Spring Cloud Slauth to assign ID to a request across multiple component, and we will use Zipkin to trace request acrosee multiple component.
+-> Each microservices having so many common features like logging, security, analytics, and so on..., so the common features are provided by Netflix Zuul API Gateway for these common features.
+
+4) Fault Tolerence:
+   a) Hystrix
+-> If a service is down, Hystrix help us to provide default response.
+
+
+*Advantages of Microservice Architecture:
+a) New technology and process adaption: Each microservice can be written in any language.
+b) Dynamic Scaling: We can dynamically scale up or scale down application based on the load.
+c) Faster release cycle: Due to smaller units.
+
+
+*Development:
+
+*Spring Cloud Config Server:
+-> Each microservice can have have multiple instances for each environment like Dev, QA, Stage, Prod, for each microservice and each environment we need seperate configuration, so Spring Cloud Config Server helps us to store this configuration.
+
+*STEP 1: Setting Up Limits Microservice:
+*Limits Service
+-> Go to "start.spring.io" and create new project.
+-> Maven Project -> Version at least 2.0.0
+-> group: com.sachin.microservices
+   Artifact: limits-service
+   dependencies: web, devtools, actuator, config client.
+-> Generate and import maven project into eclipse.
+
+*STEP 2: Creating Hard coded Limits Service:
+-> Update application.properties as :
+code:
+spring.application.name=limits-service
+server.port=8081
+
+-> Create new class "LimitsConfigurationController" in package "com.sachin.microservices.limitsservice"
+code:
+package com.sachin.microservices.limitsservice;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sachin.microservices.limitsservice.bean.LimitConfiguration;
+
+@RestController
+public class LimitsConfigurationController {
+
+	@GetMapping("/limits")
+	public LimitConfiguration retrieveLimitsFromConfigurations() {
+		return new LimitConfiguration(1000, 1);
+	}
+}
+
+
+-> Create new class "LimitConfiguration" in package "com.sachin.microservices.limitsservice.bean":
+code:
+package com.sachin.microservices.limitsservice.bean;
+
+public class LimitConfiguration {
+	
+	int maximum;
+	int minimum;
+	
+	public LimitConfiguration() {
+	
+	}
+
+	public LimitConfiguration(int maximum, int minimum) {
+		super();
+		this.maximum = maximum;
+		this.minimum = minimum;
+	}
+
+	public int getMaximum() {
+		return maximum;
+	}
+
+	public void setMaximum(int maximum) {
+		this.maximum = maximum;
+	}
+
+	public int getMinimum() {
+		return minimum;
+	}
+
+	public void setMinimum(int minimum) {
+		this.minimum = minimum;
+	}
+	
+	
+}
+
+-> Run and test the url "localhost:8081/limits"
+
+
+
+*STEP 3: Enhance Limits service to get configuration from application.properties:
+-> Update the application.properties as below:
+code:
+spring.application.name=limits-service
+server.port=8081
+
+limits-service.minimum=99
+limits-service.maximum=9999
+
+
+-> Add new class "Configuration.java" inside package "com.sachin.microservices.limitsservice"
+code:
+package com.sachin.microservices.limitsservice;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties("limits-service")
+public class Configuration {
+
+	private int minimum;
+	private int maximum;
+	
+	public int getMinimum() {
+		return minimum;
+	}
+	public void setMinimum(int minimum) {
+		this.minimum = minimum;
+	}
+	public int getMaximum() {
+		return maximum;
+	}
+	public void setMaximum(int maximum) {
+		this.maximum = maximum;
+	}
+	
+	
+}
+
+
+-> Update LimitsConfigurationController.java as below:
+code:
+package com.sachin.microservices.limitsservice;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sachin.microservices.limitsservice.bean.LimitConfiguration;
+
+@RestController
+public class LimitsConfigurationController {
+	
+	@Autowired
+	private Configuration configuration;
+
+	@GetMapping("/limits")
+	public LimitConfiguration retrieveLimitsFromConfigurations() {
+		return new LimitConfiguration(configuration.getMaximum(), configuration.getMinimum());
+	}
+}
+
+-> Run and test the change on browser "http://localhost:8081/limits"
+
+
+*STEP 4: Setting Up Spring Cloud Config Server:
+-> Go to "start.spring.io" and create new project.
+-> Maven Project -> Version at least 2.0.0
+-> group: com.sachin.microservices
+   Artifact: spring-cloud-config-server
+   dependencies: devtools, config server.
+-> Generate and import maven project into eclipse. 
+
+-> Update application.properties as below:
+code:
+spring.application.name=spring-cloud-config-server
+server.port=8888
+
+
+*STEP 5: Installing Git:
+-> Install git on your local, and check running git command.
+
+
+*STEP 6: Creating Local Git Repository:
+-> In Sample test folder run below git commands:
+>>> mkdir 	
+>>> cd git-localconfig-repo/
+>>> git init
+-> Now we have created empty git repository, now we need to link this repository to your spring-cloud-config-server.
+-> Right click on spring-cloud-config-server project -> Properties -> Java Build Path -> Source -> Link Source -> Browse Git repo folder location -> Finish.
+-> Right click on git-localconfig-repo -> New -> File -> limits-service.properties
+code:
+limits-service.minimum=8
+limits-service.maximum=888
+
+>>> git add -A
+>>> git commit -m "first commit"
+
+
+*STEP 7: Connect Spring Cloud Config Server to Local Git Repository:
+-> In Spring Cloud Config Server project -> Right Click on git-localconfig-repo -> Click Properties -> And Copy the location like "E:\Sachin Docs\SpringStepByStep\SachinPractical\Notes\7. Microservices\Practical\git-localconfig-repo"
+-> Convert this to link URL by pasting it into browser.
+
+-> In application.properties of Spring-cloud-config-server update below:
+code:
+spring.application.name=spring-cloud-config-server
+server.port=8888
+
+spring.cloud.config.server.git.uri=file:///E:/Sachin Docs/SpringStepByStep/SachinPractical/Notes/7. Microservices/Practical/git-localconfig-repo/
+
+-> Now run the spring-cloud-config-server and test the URL "http://localhost:8888/limits-service/default"
+
+
+*STEP 8: Configuration for multiple Environments in Git Repository:
+-> Inside Spring-cloud-config-server -> Right click on git-localconfig-repo -> New File "limits-service-dev.properties" and "limits-service-qa.properties" as below:
+
+limits-service-dev.properties:
+code:
+limits-service.minimum=1
+limits-service.maximum=111
+
+limits-service-qa.properties:
+code:
+limits-service.minimum=2
+limits-service.maximum=222
+
+-> Whenever we change anything in git repo, we need to commit then only it will be available for Spring-cloud-config-server.
+>>> git add -A
+>>> git status
+>>> git commit -m "Dev and QA Limit Service Properties"
+
+-> Test the below browser URL's:
+http://localhost:8888/limits-service/qa
+http://localhost:8888/limits-service/dev
+
+
+*STEP 9: Connects Limits Service to Spring Cloud Config Server:
+-> To Connect Limit Service to Spring Cloud Config Server we need to provide URI of config server.
+-> First in limits-service project -> Rename the application.properties file to "bootstrap.properties" and update code as below:
+bootstrap.properties:
+code:
+spring.application.name=limits-service
+server.port=8081
+spring.cloud.config.uri=http://localhost:8888
+
+-> Now run the limits-service, also keep spring-cloud-config-server running and test the below url:
+"http://localhost:8081/limits" you will get 8 and 888
+
+-> Now limits-service is connected to spring-cloud-config-server.
+
+
+*STEP 10: Configuring Profiles for Limits Service.
+-> Now in limits-service project update bootstrap.properties to get the dev values as:
+bootstrap.properties:
+code:
+spring.application.name=limits-service
+server.port=8081
+spring.cloud.config.uri=http://localhost:8888
+spring.profiles.active=dev
+
+-> Now run the limits-service, also keep spring-cloud-config-server running and test the below url:
+"http://localhost:8081/limits" you will get 1 and 111
+
+-> Now in limits-service project update bootstrap.properties to get the qa values as:
+bootstrap.properties:
+code:
+spring.application.name=limits-service
+server.port=8081
+spring.cloud.config.uri=http://localhost:8888
+spring.profiles.active=qa
+
+-> Now run the limits-service, also keep spring-cloud-config-server running and test the below url:
+"http://localhost:8081/limits" you will get 2 and 222
+
+
+*STEP 11: A Review of Spring Cloud Config Server:
+-> Spring Cloud Config Server is used to store configuration file for all microservice and for all envionments or profiles.
+-> Just we need to follow the naming convention while writing properties file in Spring Cloud Config Server. 
+-> Properties file name should be same as microservice project name, and we should add @EnableConfigServer annotation in main class.
+
+
+*STEP 12: Introduction to Currency Conversion and Currency Exchange Service:
+-> CurrencyExchangeService will use JPA to connect to the Database, DB will give you current exchange value for 1 unit.
+eg: http://localhost:8000/currency-exchange/from/EUR/to/INR
+
+-> CurrencyConverterService will convert the number of currency units to given currency.
+eg: 
+http://localhost:8100/currency-converter/from/USD/to/INR/quantity/10
+
+
+*STEP 13: Setting up Current Exchange Microservice:
+-> Go to "start.spring.io" and create new project.
+-> Maven Project -> Version at least 2.0.0
+-> group: com.sachin.microservices
+   Artifact: currency-exchange-service
+   dependencies: web, devtools, actuator, config client.
+-> Generate and import maven project into eclipse.
+
+-> Update the application.properties for CurrencyExchangeService:
+code:
+spring.application.name=currency-exchange-service
+server.port=8000
+
+
+*STEP 14: Create a simple hard coded Currency Exchange Microservice:
+-> Create new class "CurrencyExchangeController" in package "com.sachin.microservices.currencyexchangeservice"
+code:
+package com.sachin.microservices.currencyexchangeservice;
+
+import java.math.BigDecimal;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class CurrencyExchangeController {
+
+	@GetMapping("currency-exchange/from/{from}/to/{to}")
+	public ExchangeValue retrieveExchangeValue(@PathVariable String from, @PathVariable String to) {
+		return new ExchangeValue(1000L, from, to, BigDecimal.valueOf(65));
+	}
+}
+
+-> Create new bean class "ExchangeValue" in package "com.sachin.microservices.currencyexchangeservice"
+code:
+package com.sachin.microservices.currencyexchangeservice;
+
+import java.math.BigDecimal;
+
+public class ExchangeValue {
+
+	private Long id;
+	private String from;
+	private String to;
+	private BigDecimal conversionMultiple;
+	
+	public ExchangeValue() {
+	
+	}
+
+	public ExchangeValue(Long id, String from, String to, BigDecimal conversionMultiple) {
+		this.id = id;
+		this.from = from;
+		this.to = to;
+		this.conversionMultiple = conversionMultiple;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public String getFrom() {
+		return from;
+	}
+
+	public String getTo() {
+		return to;
+	}
+
+	public BigDecimal getConversionMultiple() {
+		return conversionMultiple;
+	}	
+}
+
+-> Test the URL in browser "http://localhost:8000/currency-exchange/from/EUR/to/INR"
+
+
+*STEP 15: Setting up Dynamic Port in the Response:
+-> Update ExchangeValue.java in Currency-exhange-service microservice as below:
+code:
+package com.sachin.microservices.currencyexchangeservice;
+
+import java.math.BigDecimal;
+
+public class ExchangeValue {
+
+	private Long id;
+	private String from;
+	private String to;
+	private BigDecimal conversionMultiple;
+	private int port;
+	
+	public ExchangeValue() {
+	
+	}
+
+	public ExchangeValue(Long id, String from, String to, BigDecimal conversionMultiple) {
+		this.id = id;
+		this.from = from;
+		this.to = to;
+		this.conversionMultiple = conversionMultiple;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public String getFrom() {
+		return from;
+	}
+
+	public String getTo() {
+		return to;
+	}
+
+	public BigDecimal getConversionMultiple() {
+		return conversionMultiple;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+}
+
+-> Update "CurrencyExchangeController.java"
+code:
+package com.sachin.microservices.currencyexchangeservice;
+
+import java.math.BigDecimal;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class CurrencyExchangeController {
+	
+	@Autowired
+	private Environment environment;
+
+	@GetMapping("currency-exchange/from/{from}/to/{to}")
+	public ExchangeValue retrieveExchangeValue(@PathVariable String from, @PathVariable String to) {
+		
+		ExchangeValue exchangeValue = new ExchangeValue(1000L, from, to, BigDecimal.valueOf(65));
+		
+		exchangeValue.setPort(Integer.parseInt(environment.getProperty("local.server.port")));
+		
+		return exchangeValue;
+	}
+}
+
+-> Run the URL in browser and test "http://localhost:8000/currency-exchange/from/EUR/to/INR"
+
+-> Now you can see the port no. as well in output.
+
+-> Now we need to launch multiple instance of CurrencyExchangeService on different ports.
+-> Right Click on currency-exchange-service project -> Run As -> Run Configurations -> Select CurrencyExchangeServiceApplication -> Rename it to CurrencyExchangeServiceApplication8000 -> Right click and click Duplicate -> CurrencyExchangeServiceApplication8001
+-> Provide VM Argument for CurrencyExchangeServiceApplication8001 as "-Dserver.port=8001" -> Apply -> Run.
+-> Now test two URL's:
+http://localhost:8000/currency-exchange/from/EUR/to/INR
+http://localhost:8001/currency-exchange/from/EUR/to/INR
+
+
+*STEP 16: Configure JPA and Initialized Data:
+-> Update pom.xml of currency-exchange-service to add jpa and h2 dependency:
+code:
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.2.0.M5</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.sachin.microservices</groupId>
+	<artifactId>currency-exchange-service</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>currency-exchange-service</name>
+	<description>Demo project for Spring Boot</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+		<spring-cloud.version>Hoxton.M1</spring-cloud.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+</project>
+
+
+-> Update ExchangeValue.java as 
+code:
+package com.sachin.microservices.currencyexchangeservice;
+
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+
+@Entity
+public class ExchangeValue {
+
+	@Id
+	private Long id;
+	
+	@Column(name="currency_from")
+	private String from;
+	
+	@Column(name="currency_to")
+	private String to;
+	
+	private BigDecimal conversionMultiple;
+	
+	private int port;
+	
+	public ExchangeValue() {
+	
+	}
+
+	public ExchangeValue(Long id, String from, String to, BigDecimal conversionMultiple) {
+		this.id = id;
+		this.from = from;
+		this.to = to;
+		this.conversionMultiple = conversionMultiple;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public String getFrom() {
+		return from;
+	}
+
+	public String getTo() {
+		return to;
+	}
+
+	public BigDecimal getConversionMultiple() {
+		return conversionMultiple;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+}
+
+-> In CurrencyExchangeService project, create "data.sql" file inside src->main->resources
+code:
+insert into exchange_value(id, currency_from, currency_to, conversion_multiple, port)
+values(10001, 'USD', 'INR', 65, 0);
+insert into exchange_value(id, currency_from, currency_to, conversion_multiple, port)
+values(10002, 'EUR', 'INR', 75, 0);
+insert into exchange_value(id, currency_from, currency_to, conversion_multiple, port)
+values(10003, 'AUD', 'INR', 25, 0);
+
+
+-> Update application.properties for currency-exchange-service as below:
+code:
+spring.application.name=currency-exchange-service
+server.port=8000
+
+spring.jpa.show-sql=true
+spring.h2.console.enabled=true
+
+
+-> Run the application, and test the H2 console at URL "http://localhost:8000/h2-console" -> Click connect
+
+-> Enter Query "select * from exchange_value;" -> Run
+-> you can see the Table created with given values.
+
+
+*STEP 17: Create a JPA Repository:
+-> We will create "ExchangeValueRepository" as JpaRepository and add one query method.
+code:
+package com.sachin.microservices.currencyexchangeservice;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ExchangeValueRepository extends JpaRepository<ExchangeValue, Long> {
+
+	ExchangeValue findByFromAndTo(String from, String to);
+}
+
+-> Update CustomerExchageController.java:
+code:
+package com.sachin.microservices.currencyexchangeservice;
+
+import java.math.BigDecimal;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class CurrencyExchangeController {
+	
+	@Autowired
+	private Environment environment;
+	
+	@Autowired
+	private ExchangeValueRepository repository;
+
+	@GetMapping("currency-exchange/from/{from}/to/{to}")
+	public ExchangeValue retrieveExchangeValue(@PathVariable String from, @PathVariable String to) {
+		
+		ExchangeValue exchangeValue = 
+				repository.findByFromAndTo(from, to);
+		
+		exchangeValue.setPort(Integer.parseInt(environment.getProperty("local.server.port")));
+		
+		return exchangeValue;
+	}
+}
+
+-> Now test the below URL's and test whether the data is coming from H2 DB or not.
+http://localhost:8000/currency-exchange/from/USD/to/INR
+http://localhost:8000/currency-exchange/from/EUR/to/INR
+http://localhost:8000/currency-exchange/from/AUD/to/INR
+
+
+*STEP 18: Setting Up Corrency Conversion Microservice:
+-> Go to "start.spring.io" and create new project.
+-> Maven Project -> Version at least 2.0.0
+-> group: com.sachin.microservices
+   Artifact: currency-conversion-service
+   dependencies: web, devtools, actuator, config client.
+-> Generate and import maven project into eclipse.
+
+-> Update application.properties for currency-conversion-service as below:
+code:
+spring.application.name=currency-conversion-service
+server.port=8100
+
+
+*STEP 19: Creating service for currency conversion:
+-> We will first create harcoded controller with dummy values as:
+-> Create CurrencyConversionController.java in package "com.sachin.microservices.currencyconversionservice"
+code:
+package com.sachin.microservices.currencyconversionservice;
+
+import java.math.BigDecimal;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class CurrencyConversionController {
+
+	@GetMapping("/currency-converter/from/{from}/to/{to}/quantity/{quantity}")
+	public CurrencyConversionBean cunvertCurrency(@PathVariable String from, @PathVariable String to, @PathVariable BigDecimal quantity) {
+		return new CurrencyConversionBean(1L, from, to, BigDecimal.ONE, quantity, quantity, 0);
+	}
+}
+
+-> Create "CurrencyConversionBean.java" in package com.sachin.microservices.currencyconversionservice:
+code:
+package com.sachin.microservices.currencyconversionservice;
+
+import java.math.BigDecimal;
+
+public class CurrencyConversionBean {
+	
+	private Long id;
+	private String from;
+	private String to;
+	private BigDecimal conversionMultiple;
+	private BigDecimal quantity;
+	private BigDecimal totalCalculatedAmount;
+	private int port;
+	
+	public CurrencyConversionBean() {
+	
+	}
+
+	public CurrencyConversionBean(Long id, String from, String to, BigDecimal conversionMultiple, BigDecimal quantity,
+			BigDecimal totalCalculatedAmount, int port) {
+		super();
+		this.id = id;
+		this.from = from;
+		this.to = to;
+		this.conversionMultiple = conversionMultiple;
+		this.quantity = quantity;
+		this.totalCalculatedAmount = totalCalculatedAmount;
+		this.port = port;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getFrom() {
+		return from;
+	}
+
+	public void setFrom(String from) {
+		this.from = from;
+	}
+
+	public String getTo() {
+		return to;
+	}
+
+	public void setTo(String to) {
+		this.to = to;
+	}
+
+	public BigDecimal getConversionMultiple() {
+		return conversionMultiple;
+	}
+
+	public void setConversionMultiple(BigDecimal conversionMultiple) {
+		this.conversionMultiple = conversionMultiple;
+	}
+
+	public BigDecimal getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(BigDecimal quantity) {
+		this.quantity = quantity;
+	}
+
+	public BigDecimal getTotalCalculatedAmount() {
+		return totalCalculatedAmount;
+	}
+
+	public void setTotalCalculatedAmount(BigDecimal totalCalculatedAmount) {
+		this.totalCalculatedAmount = totalCalculatedAmount;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}	
+}
+
+-> Test the URL on browser "http://localhost:8100/currency-converter/from/AUD/to/INR/quantity/1000" and check whether it is giving provided values.
+
+
+*STEP 20: Invoking Currency Exchange Microservice from Currency Converter service:
+-> We can call another rest service from our Java code using RestTemplate
+-> Update CurrencyConversionController.java from currency-converter-service as below:
+code:
+package com.sachin.microservices.currencyconversionservice;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+public class CurrencyConversionController {
+
+	@GetMapping("/currency-converter/from/{from}/to/{to}/quantity/{quantity}")
+	public CurrencyConversionBean cunvertCurrency(@PathVariable String from, @PathVariable String to, @PathVariable BigDecimal quantity) {
+		
+		Map<String, String> uriVariables = new HashMap<>();
+		uriVariables.put("from", from);
+		uriVariables.put("to", to);
+		
+		ResponseEntity<CurrencyConversionBean> responseEntity = new RestTemplate().getForEntity("http://localhost:8000/currency-exchange/from/{from}/to/{to}", CurrencyConversionBean.class, uriVariables);
+		
+		CurrencyConversionBean response = responseEntity.getBody();
+		
+		return new CurrencyConversionBean(response.getId(), from, to, response.getConversionMultiple(), quantity, quantity.multiply(response.getConversionMultiple()), response.getPort());
+	}
+}
+
+-> So it will fetch the response from currency-exchange-service.
+-> Now run the currency-exchange-service as well as currency-converter-service and test the URL:
+"http://localhost:8100/currency-converter/from/AUD/to/INR/quantity/1000"
+http://localhost:8100/currency-converter/from/USD/to/INR/quantity/1000
+http://localhost:8100/currency-converter/from/EUR/to/INR/quantity/1000
+
+
+*STEP 21: Using Feign REST Client for Service Invocation:
+-> Problem 1: We are writing huge code for the simple REST call, to resolve this we will use Feign.
+-> Update pom.xml for currency-conversion-service to add 
+code:
+<dependency>			<groupId>org.springframework.cloud</groupId>
+<artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+
+-> Update "CurrencyConversionServiceApplication.java" to enable feign:
+code:
+package com.sachin.microservices.currencyconversionservice;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+
+@SpringBootApplication
+@EnableFeignClients("com.sachin.microservices.currencyconversionservice")
+public class CurrencyConversionServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CurrencyConversionServiceApplication.class, args);
+	}
+
+}
+
+-> Create new interface "CurrencyExchangeServiceProxy" in package "com.sachin.microservices.currencyconversionservice":
+code:
+package com.sachin.microservices.currencyconversionservice;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+@FeignClient(name="currency-exchange-service", url="localhost:8000")
+public interface CurrencyExchangeServiceProxy {
+	
+	@GetMapping("currency-exchange/from/{from}/to/{to}")
+	public CurrencyConversionBean retrieveExchangeValue(@PathVariable("from") String from, @PathVariable("to") String to);
+}
+
+-> Uptdae controller "CurrencyConversionController.java" to add new method:
+code:
+package com.sachin.microservices.currencyconversionservice;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+public class CurrencyConversionController {
+
+	@Autowired
+	private CurrencyExchangeServiceProxy proxy;
+	
+	@GetMapping("/currency-converter/from/{from}/to/{to}/quantity/{quantity}")
+	public CurrencyConversionBean cunvertCurrency(@PathVariable String from, @PathVariable String to, @PathVariable BigDecimal quantity) {
+		
+		// Feign - Problem 1
+		Map<String, String> uriVariables = new HashMap<>();
+		uriVariables.put("from", from);
+		uriVariables.put("to", to);
+		
+		ResponseEntity<CurrencyConversionBean> responseEntity = new RestTemplate().getForEntity("http://localhost:8000/currency-exchange/from/{from}/to/{to}", CurrencyConversionBean.class, uriVariables);
+		
+		CurrencyConversionBean response = responseEntity.getBody();
+		
+		return new CurrencyConversionBean(response.getId(), from, to, response.getConversionMultiple(), quantity, quantity.multiply(response.getConversionMultiple()), response.getPort());
+	}
+	
+	@GetMapping("/currency-converter-feign/from/{from}/to/{to}/quantity/{quantity}")
+	public CurrencyConversionBean cunvertCurrencyFeign(@PathVariable String from, @PathVariable String to, @PathVariable BigDecimal quantity) {
+		
+		CurrencyConversionBean response = proxy.retrieveExchangeValue(from, to);
+		
+		return new CurrencyConversionBean(response.getId(), from, to, response.getConversionMultiple(), quantity, quantity.multiply(response.getConversionMultiple()), response.getPort());
+	}
+}
+
+-> Now run the currency-exchange-service as well as currency-converter-service and test the URL:
+"http://localhost:8100/currency-converter-feign/from/AUD/to/INR/quantity/1000"
+http://localhost:8100/currency-converter-feign/from/USD/to/INR/quantity/1000
+http://localhost:8100/currency-converter-feign/from/EUR/to/INR/quantity/1000
+
+
+*STEP 22: Setting up client side load balancing with Ribbon:
+-> Inside currency-conversion-service project update pom.xml to add below dependency:
+code:
+<dependency>
+<groupId>org.springframework.cloud</groupId>
+<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+</dependency>
+
+-> Update interface "CurrencyExchangeServiceProxy.java" as below:
+code:
+package com.sachin.microservices.currencyconversionservice;
+
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+//@FeignClient(name="currency-exchange-service", url="localhost:8000")
+@FeignClient(name="currency-exchange-service")
+@RibbonClient(name="currency-exchange-service")
+public interface CurrencyExchangeServiceProxy {
+	
+	@GetMapping("currency-exchange/from/{from}/to/{to}")
+	public CurrencyConversionBean retrieveExchangeValue(@PathVariable("from") String from, @PathVariable("to") String to);
+}
+
+-> Update application.properties for currency-conversion-service as below:
+code:
+spring.application.name=currency-conversion-service
+server.port=8100
+currency-exchange-service.ribbon.listOfServers=http://localhost:8000,http://localhost:8001
+
+
+*STEP 23: Running Client side load balancing with Ribbon:
+-> Now Launch the 2 instance for Currency Exchange Service on port 8000 and port 8001.
+-> Now run the Currency Conversion Service ruunning on port 8100.
+-> Open url in browser:
+"http://localhost:8100/currency-converter-feign/from/USD/to/INR/quantity/1000"
+-> Hit the refresh again and again, and check the port in response, you can see its distributing the load between 8000 and 8001.
+
+
+*STEP 24: Understand the need for a Naming Server.
+-> Right now we have listed the Ribbon list of services in application.proeprties of currency-conversion-service for load balancing.
+-> Suppose tomorrow, I have again added one more instance of currency-exchange-service, and then to distribute this load to this new instance, again I need to update application.proeprties of currency-conversion-service to add this instance ip for load balancing.
+-> To resolve this issue we will have Eureka Naming Server into the picture.
+-> All the instances of all microservices will register with the Eureka Naming Server this is called "Service Registration".
+-> Whenever a service wants to talk to other service, then it will ask Eureka Naming Server, that what are the instances of this service currently running, this is called "Service Discovery".
+
+
+*STEP 25: Setting up Eureka Naming Server.
+-> Go to "start.spring.io" and create new project.
+-> Maven Project -> Version at least 2.0.0
+-> group: com.sachin.microservices
+   Artifact: netflix-eureka-naming-server
+   dependencies: Eureka Server, devtools, actuator, config client.
+-> Generate and import maven project into eclipse.
+
+-> For netflix-eureka-naming-server project update application.properties as 
+code:
+spring.application.name=netflix-eureka-naming-server
+server.port=8761
+
+eureka.client.register-with-eureka=false
+eureka.client.fetch-registry=false
+
+-> Update Main class "NetflixEurekaNamingServerApplication.java" as
+code:
+package com.sachin.microservices.netflixeurekanamingserver;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
+
+@SpringBootApplication
+@EnableEurekaServer
+public class NetflixEurekaNamingServerApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(NetflixEurekaNamingServerApplication.class, args);
+	}
+}
+
+-> Run and test the Eureka Naming Server dashboard on "http://localhost:8761"
+
+
+*STEP 27: Connect Currency Conversion Microservice to Eureka:
+-> In "currency-conversion-service" project update pom.xml to add new dependency 
+code:
+<dependency>
+<groupId>org.springframework.cloud</groupId>
+<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+-> Update main class "CurrencyConversionServiceApplication.java" as 
+code:
+package com.sachin.microservices.currencyconversionservice;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+
+@SpringBootApplication
+@EnableDiscoveryClient
+@EnableFeignClients("com.sachin.microservices.currencyconversionservice")
+public class CurrencyConversionServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CurrencyConversionServiceApplication.class, args);
+	}
+
+}
+
+-> Update application.properties for currency-conversion-service project as 
+code:
+spring.application.name=currency-conversion-service
+server.port=8100
+
+eureka.client.service-url.default-zone=http://localhost:8761/eureka
+currency-exchange-service.ribbon.listOfServers=http://localhost:8000,http://localhost:8001
+
+-> Now Run the Eureka server application "localhost:8761"
+-> Run the currency conversion application on "localhost:8100"
+
+-> Test "http://localhost:8761/", you can see Currency-conversion-service is registered with Eureka.
+
+
+*STEP 28: Connect Currency Exchange Microservice to Eureka:
+-> In "currency-exchange-service" project update pom.xml to add new dependency 
+code:
+<dependency>
+<groupId>org.springframework.cloud</groupId>
+<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+-> Update main class "CurrencyExchangeServiceApplication.java" as 
+code:
+package com.sachin.microservices.currencyexchangeservice;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+
+@SpringBootApplication
+@EnableDiscoveryClient
+public class CurrencyExchangeServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CurrencyExchangeServiceApplication.class, args);
+	}
+
+}
+
+
+-> Update application.properties for currency-conversion-service project as 
+code:
+spring.application.name=currency-exchange-service
+server.port=8000
+
+spring.jpa.show-sql=true
+spring.h2.console.enabled=true
+
+eureka.client.service-url.default-zone=http://localhost:8761/eureka
+
+-> Now Run the Eureka server application "localhost:8761"
+-> Run the currency exchange application on "localhost:8000"
+-> Run the currency exchange application on "localhost:8001"
+
+-> Test "http://localhost:8761/", you can see 2 instances Currency-exchange-service is registered with Eureka.
+
+
+*STEP 28: Distributing Calls using Eureka and Ribbon:
+-> Go to application.properties for "currency-conversion-service" project, and comment the listOfServers for currency exchange service
+code:
+spring.application.name=currency-conversion-service
+server.port=8100
+
+eureka.client.service-url.default-zone=http://localhost:8761/eureka
+#currency-exchange-service.ribbon.listOfServers=http://localhost:8000,http://localhost:8001
+
+-> Now terminate all instances and first just run the eureka server on localhost:8761
+-> Now Just run Currency Exchange Service on localhost:8000, and test it is getting registered with eureka.
+-> Now Just run Currency Conversion Service on localhost:8100, and test it is getting registered with eureka.
+-> Test URL "http://localhost:8100/currency-converter-feign/from/USD/to/INR/quantity/1000"
+-> See it is working correctly.
+-> Now run Currency Exchange Service on localhost:8001, and test it is getting registered with eureka.
+-> Test URL "http://localhost:8100/currency-converter-feign/from/USD/to/INR/quantity/1000" for load balancing.
+
+
+*STEP 29: A review of implementing Eureka, Ribbon and Feign:
+-> Fiegn: To make it easy to connect to REST Calls.
+-> Ribbon: To enable to load balancing(Client Side Load Balancing)
+-> Eureka: Instead of hardcoding URL's, we have registered and discovered URL's from Eureka Naming Server.(Service Registration and Service Discovery)
+
